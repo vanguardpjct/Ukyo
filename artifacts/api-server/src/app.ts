@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (_req, res) => {
-  res.send("Bot está online!");
+  res.send("Bot online");
 });
 
 app.use("/api", router);
