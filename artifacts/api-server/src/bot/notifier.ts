@@ -23,6 +23,40 @@ async function fetchRows(url: string): Promise<Record<string, string>[]> {
   });
 }
 
+function calcularDias(prazo: string): number | null {
+  const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!match) return null;
+
+  const day = parseInt(match[1]!, 10);
+  const month = parseInt(match[2]!, 10) - 1;
+
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const deadline = new Date(ano, month, day);
+
+  const diff = deadline.getTime() - hoje.setHours(0, 0, 0, 0);
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function buildMensagem(id: string, titulo: string, prazo: string): string {
+  const dias = calcularDias(prazo);
+  const diasTexto =
+    dias === null
+      ? prazo
+      : dias < 0
+        ? `atrasado ${Math.abs(dias)} dia(s)`
+        : dias === 0
+          ? `hoje!`
+          : `${dias} dia(s)`;
+
+  return (
+    `\n✨ ─────────────── ✨\n` +
+    `<@${id}> 📍 Entrega em **${diasTexto}**!\n` +
+    `🎨 ${titulo}\n` +
+    `✨ ─────────────── ✨\n`
+  );
+}
+
 export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
   logger.info("Buscando dados da planilha...");
 
@@ -39,11 +73,9 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     const status = row["STATUS"]?.trim();
     const prazo = row["Prazo de entrega"]?.trim();
 
-    if (!id || !titulo || status === "ENTREGUE") continue;
+    if (!id || !titulo || status === "ENTREGUE" || !prazo) continue;
 
-    await canal.send(
-      `<@${id}> 📍 Pedido próximo!\n📖 **${titulo}**${prazo ? `\n🗓️ Prazo: **${prazo}**` : ""}\n> *Betagem*`,
-    );
+    await canal.send(buildMensagem(id, titulo, prazo));
     count++;
   }
 
@@ -53,11 +85,9 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     const status = row["STATUS"]?.trim();
     const prazo = row["Prazo de entrega:"]?.trim();
 
-    if (!id || !titulo || status === "ENTREGUE") continue;
+    if (!id || !titulo || status === "ENTREGUE" || !prazo) continue;
 
-    await canal.send(
-      `<@${id}> 📍 Pedido próximo!\n🎨 **${titulo}**${prazo ? `\n🗓️ Prazo: **${prazo}**` : ""}\n> *Design*`,
-    );
+    await canal.send(buildMensagem(id, titulo, prazo));
     count++;
   }
 
