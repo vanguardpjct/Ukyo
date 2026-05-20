@@ -38,19 +38,23 @@ function calcularDias(prazo: string): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function buildMensagem(id: string, titulo: string, prazo: string): string {
-  const dias = calcularDias(prazo);
-  const diasTexto =
-    dias === null
-      ? prazo
-      : dias < 0
-        ? `atrasado ${Math.abs(dias)} dia(s)`
-        : dias === 0
-          ? `hoje!`
-          : `${dias} dia(s)`;
+function formatarData(prazo: string): string {
+  const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!match) return prazo;
+  const day = parseInt(match[1]!, 10);
+  const month = parseInt(match[2]!, 10) - 1;
+  const date = new Date(new Date().getFullYear(), month, day);
+  return date.toLocaleDateString("pt-BR");
+}
 
-  void diasTexto;
-  return `<@${id}> 📍 Pedido próximo!\n🎨 ${titulo}\n\n`;
+function buildMensagem(id: string, titulo: string, prazo: string, tipo: string): string {
+  return (
+    `📍 Pedido próximo!\n` +
+    `<@${id}>\n` +
+    `🎨 ${titulo}\n` +
+    `🗓️ ${formatarData(prazo)}\n` +
+    `📌 ${tipo}\n`
+  );
 }
 
 export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
@@ -72,10 +76,9 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
-    const statusOk = status === "em andamento" || status === "em avaliação";
-    if (!statusOk || dias === null || dias < 0 || dias > 7) continue;
+    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
 
-    await canal.send(buildMensagem(id, titulo, prazo));
+    await canal.send(buildMensagem(id, titulo, prazo, "Betagem"));
     count++;
   }
 
@@ -88,10 +91,9 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
-    const statusOk = status === "em andamento" || status === "em avaliação";
-    if (!statusOk || dias === null || dias < 0 || dias > 7) continue;
+    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
 
-    await canal.send(buildMensagem(id, titulo, prazo));
+    await canal.send(buildMensagem(id, titulo, prazo, "Design"));
     count++;
   }
 
