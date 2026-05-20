@@ -49,11 +49,8 @@ function buildMensagem(id: string, titulo: string, prazo: string): string {
           ? `hoje!`
           : `${dias} dia(s)`;
 
-  return (
-    `<@${id}> 📍 Pedido próximo!\n` +
-    `🎨 ${titulo}\n` +
-    (diasTexto ? `🗓️ Entrega em **${diasTexto}**` : "")
-  );
+  void diasTexto;
+  return `<@${id}> 📍 Pedido próximo!\n🎨 ${titulo}\n\n`;
 }
 
 export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
