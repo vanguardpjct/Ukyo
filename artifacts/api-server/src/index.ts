@@ -16,7 +16,7 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const token = process.env["DISCORD_TOKEN"];
+const token = process.env["TOKEN"] ?? process.env["DISCORD_TOKEN"];
 const clientId = process.env["DISCORD_CLIENT_ID"];
 
 if (!token || !clientId) {

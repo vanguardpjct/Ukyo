@@ -42,7 +42,7 @@ export function createBot(token: string) {
   });
 
   client.once(Events.ClientReady, (c) => {
-    logger.info({ tag: c.user.tag }, "Discord bot is ready");
+    logger.info(`Online como ${c.user.tag}`);
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
