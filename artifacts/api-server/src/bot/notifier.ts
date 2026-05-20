@@ -72,7 +72,8 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
-    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
+    const statusOk = status === "em andamento" || status === "em avaliação";
+    if (!statusOk || dias === null || dias < 0 || dias > 7) continue;
 
     await canal.send(buildMensagem(id, titulo, prazo));
     count++;
@@ -87,7 +88,8 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
-    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
+    const statusOk = status === "em andamento" || status === "em avaliação";
+    if (!statusOk || dias === null || dias < 0 || dias > 7) continue;
 
     await canal.send(buildMensagem(id, titulo, prazo));
     count++;
