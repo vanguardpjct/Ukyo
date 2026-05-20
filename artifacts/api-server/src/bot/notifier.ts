@@ -50,10 +50,9 @@ function buildMensagem(id: string, titulo: string, prazo: string): string {
           : `${dias} dia(s)`;
 
   return (
-    `\n✨ ─────────────── ✨\n` +
-    `<@${id}> 📍 Entrega em **${diasTexto}**!\n` +
+    `<@${id}> 📍 Pedido próximo!\n` +
     `🎨 ${titulo}\n` +
-    `✨ ─────────────── ✨\n`
+    (diasTexto ? `🗓️ Entrega em **${diasTexto}**` : "")
   );
 }
 
