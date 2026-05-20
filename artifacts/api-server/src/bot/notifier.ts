@@ -66,10 +66,13 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
   for (const row of betagem) {
     const id = row["ID DO DISCORD"]?.trim();
     const titulo = row["Titulo da história"]?.trim();
-    const status = row["STATUS"]?.trim();
+    const status = (row["STATUS"] ?? "").trim().toLowerCase();
     const prazo = row["Prazo de entrega"]?.trim();
 
-    if (!id || !titulo || status === "ENTREGUE" || !prazo) continue;
+    if (!id || !titulo || !prazo) continue;
+
+    const dias = calcularDias(prazo);
+    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
 
     await canal.send(buildMensagem(id, titulo, prazo));
     count++;
@@ -78,10 +81,13 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
   for (const row of design) {
     const id = row["ID DO DISCORD"]?.trim();
     const titulo = row["Titulo da história"]?.trim();
-    const status = row["STATUS"]?.trim();
+    const status = (row["STATUS"] ?? "").trim().toLowerCase();
     const prazo = row["Prazo de entrega:"]?.trim();
 
-    if (!id || !titulo || status === "ENTREGUE" || !prazo) continue;
+    if (!id || !titulo || !prazo) continue;
+
+    const dias = calcularDias(prazo);
+    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
 
     await canal.send(buildMensagem(id, titulo, prazo));
     count++;
