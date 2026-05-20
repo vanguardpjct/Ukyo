@@ -80,6 +80,7 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
 
     await canal.send(buildMensagem(id, titulo, prazo, "Betagem"));
     count++;
+    await new Promise((r) => setTimeout(r, 1200));
   }
 
   for (const row of design) {
@@ -95,6 +96,7 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
 
     await canal.send(buildMensagem(id, titulo, prazo, "Design"));
     count++;
+    await new Promise((r) => setTimeout(r, 1200));
   }
 
   logger.info({ count }, "Notificações enviadas");
