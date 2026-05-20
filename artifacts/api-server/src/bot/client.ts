@@ -15,13 +15,14 @@ import * as hello from "./commands/hello";
 import * as roll from "./commands/roll";
 import * as help from "./commands/help";
 import * as avisar from "./commands/avisar";
+import * as status from "./commands/status";
 
 interface Command {
   data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 }
 
-const commands: Command[] = [ping, hello, roll, help, avisar];
+const commands: Command[] = [ping, hello, roll, help, avisar, status];
 
 const commandMap = new Collection<string, Command>();
 for (const cmd of commands) {
