@@ -49,11 +49,13 @@ function formatarData(prazo: string): string {
 
 function buildMensagem(id: string, titulo: string, prazo: string, tipo: string): string {
   return (
+    `\u200B\n` +
     `📍 Pedido próximo!\n` +
     `<@${id}>\n` +
     `🎨 ${titulo}\n` +
     `🗓️ ${formatarData(prazo)}\n` +
-    `📌 ${tipo}\n`
+    `📌 ${tipo}\n` +
+    `\u200B\n`
   );
 }
 
