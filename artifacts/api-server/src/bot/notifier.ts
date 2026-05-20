@@ -54,8 +54,7 @@ function buildMensagem(id: string, titulo: string, prazo: string, tipo: string):
     `<@${id}>\n` +
     `🎨 ${titulo}\n` +
     `🗓️ ${formatarData(prazo)}\n` +
-    `📌 ${tipo}\n` +
-    `\u200B\n`
+    `📌 ${tipo}\n`
   );
 }
 
