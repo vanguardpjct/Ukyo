@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { createBot, registerCommands } from "./bot/client";
+import axios from "axios";
 
 const rawPort = process.env["PORT"];
 
@@ -40,4 +41,14 @@ app.listen(port, async (err) => {
     logger.error({ err }, "Failed to start Discord bot");
     process.exit(1);
   }
+
+  const selfUrl = `http://localhost:${port}/api/`;
+  setInterval(async () => {
+    try {
+      await axios.get(selfUrl);
+      logger.info("Keep-alive ping sent");
+    } catch {
+      logger.warn("Keep-alive ping failed");
+    }
+  }, 5 * 60 * 1000);
 });
