@@ -44,7 +44,7 @@ export function createBot(token: string) {
   });
 
   client.once(Events.ClientReady, (c) => {
-    logger.info(`Online como ${c.user.tag}`);
+    logger.info(`Logado como ${c.user.tag}`);
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
