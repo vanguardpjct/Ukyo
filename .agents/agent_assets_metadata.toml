@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "nrkMeBlbagv9bSFHmz9A9"
+uri = "file://bot.tar.gz"
+type = "unspecified"
+title = "bot.tar.gz — Bot source files"
