@@ -50,5 +50,5 @@ app.listen(port, async (err) => {
     } catch {
       logger.warn("Keep-alive ping failed");
     }
-  }, 5 * 60 * 1000);
+  }, 1 * 60 * 1000);
 });
