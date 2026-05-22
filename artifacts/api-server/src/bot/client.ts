@@ -47,28 +47,17 @@ export function createBot(token: string) {
     logger.info(`Logado como ${c.user.tag}`);
   });
 
-  client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+  client.on("shardDisconnect", () => {
+    logger.warn("Shard desconectada");
+  });
 
-    const command = commandMap.get(interaction.commandName);
-    if (!command) {
-      logger.warn({ command: interaction.commandName }, "Unknown command");
-      return;
-    }
+  client.on("shardReconnecting", () => {
+    logger.info("Reconectando shard...");
+  });
 
-    try {
-      await command.execute(interaction);
-    } catch (err) {
-      logger.error({ err, command: interaction.commandName }, "Command failed");
-      const msg = { content: "An error occurred while running this command.", ephemeral: true };
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(msg);
-      } else {
-        await interaction.reply(msg);
-      }
-    }
+  client.on("shardResume", () => {
+    logger.info("Shard retomada");
   });
 
   client.login(token);
-  return client;
-}
+  return client;}

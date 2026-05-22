@@ -36,7 +36,20 @@ app.listen(port, async (err) => {
 
   try {
     await registerCommands(token, clientId);
-    createBot(token);
+
+const client = createBot(token);
+
+client.on("shardDisconnect", () => {
+  logger.warn("Shard desconectada");
+});
+
+client.on("shardReconnecting", () => {
+  logger.info("Reconectando shard...");
+});
+
+client.on("shardResume", () => {
+  logger.info("Shard retomada");
+});
   } catch (err) {
     logger.error({ err }, "Failed to start Discord bot");
     process.exit(1);
