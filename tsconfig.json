@@ -14,3 +14,8 @@
     }
   ]
 }
+{
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"]
+  }
+}

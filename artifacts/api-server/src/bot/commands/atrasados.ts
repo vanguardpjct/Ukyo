@@ -3,7 +3,24 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-import { fetchRows, calcularDias } from "../utils/atrasados";
+import { fetchRows } from "../utils/sheets";
+
+const BASE =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIeJra7GmTou29HUi5nVKU3VqunWq1nEMumqZgwYh9KEwjzRkZ_kQUAyln8GNNd6sn1he7NPr3Kq4P/pub?output=csv";
+
+const BETAGEM_URL = `${BASE}&gid=1086349845`;
+const DESIGN_URL = `${BASE}&gid=8022561`;
+
+function calcularDias(prazo?: string): number | null {
+  if (!prazo) return null;
+
+  const dataPrazo = new Date(prazo);
+  const hoje = new Date();
+
+  return Math.floor(
+    (dataPrazo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
+  );
+}
 
 export const data = new SlashCommandBuilder()
   .setName("atrasados")
@@ -12,27 +29,27 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
-  const betagem = (await fetchRows(process.env.BETAGEM_URL!)) as Record<string, string>[];
-  const design = (await fetchRows(process.env.DESIGN_URL!)) as Record<string, string>[];
+  const [betagem, design] = await Promise.all([
+    fetchRows(BETAGEM_URL),
+    fetchRows(DESIGN_URL),
+  ]);
 
   const atrasados: string[] = [];
 
   for (const row of [...betagem, ...design]) {
+    const status = (row["STATUS"] ?? "").trim().toLowerCase();
+
+    if (status === "entregue") continue;
+
     const titulo = row["Titulo da história"]?.trim();
 
     const prazo =
       row["Prazo de entrega"]?.trim() ||
       row["Prazo de entrega:"]?.trim();
 
-    const status = (row["STATUS"] ?? "").trim().toLowerCase();
-
     const dias = calcularDias(prazo);
 
-    if (
-      dias !== null &&
-      dias < 0 &&
-      ["em andamento", "aceito"].includes(status)
-    ) {
+    if (dias !== null && dias < 0) {
       atrasados.push(`🔴 ${titulo} (${dias} dias)`);
     }
   }
