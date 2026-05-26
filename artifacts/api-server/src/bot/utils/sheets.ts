@@ -1,27 +1,24 @@
 export type Row = Record<string, string>;
 
 export async function fetchRows(url: string): Promise<Row[]> {
-  const res = await (globalThis as any).fetch(url);
+  const res = await fetch(url);
 
-  if (!res) {
-    throw new Error("Fetch não disponível no ambiente Node atual");
+  if (!res.ok) {
+    throw new Error(`Erro ao buscar planilha: ${res.status}`);
   }
 
-  const text: string = await res.text();
+  const text = await res.text();
 
-  const lines: string[] = text.trim().split("\n");
+  const lines = text.trim().split("\n");
 
-  const headerLine: string = lines[0];
-  const dataLines: string[] = lines.slice(1);
+  const headers = lines[0].split(",").map((h) => h.trim());
 
-  const headers: string[] = headerLine.split(",").map((h: string) => h.trim());
-
-  return dataLines.map((line: string) => {
-    const values: string[] = line.split(",");
+  return lines.slice(1).map((line) => {
+    const values = line.split(",");
 
     const row: Row = {};
 
-    headers.forEach((h: string, i: number) => {
+    headers.forEach((h, i) => {
       row[h] = values[i]?.trim() ?? "";
     });
 
