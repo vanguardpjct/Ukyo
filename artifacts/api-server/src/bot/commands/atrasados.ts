@@ -6,7 +6,7 @@ import {
 import { fetchRows } from "../utils/sheets";
 
 const BASE =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIeJra7GmTou29HUi5nVKU3VqunWq1nEMumqZgwYh9KEwjzRkZ_kQUAyln8GNNd6sn1he7NPr3Kq4P/pub?output=csv";
+  "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
 
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
