@@ -3,11 +3,11 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-import { fetchRows, calcularDias } from "../utils/atrasados";
+import { fetchRows, calcularDias, Row } from "../utils/pendentes";
 
 export const data = new SlashCommandBuilder()
-  .setName("atrasados")
-  .setDescription("Mostra pedidos atrasados");
+  .setName("pendentes")
+  .setDescription("Mostra pedidos pendentes");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
@@ -24,8 +24,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       row["Prazo de entrega"]?.trim() ||
       row["Prazo de entrega:"]?.trim();
 
-    const status = (row["STATUS"] ?? "").trim().toLowerCase();
+    if (!prazo) continue;
 
+    const status = (row["STATUS"] ?? "").trim().toLowerCase();
     const dias = calcularDias(prazo);
 
     if (
@@ -38,7 +39,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   if (!atrasados.length) {
-    return interaction.editReply("✅ Nenhum pedido atrasado.");
+    await interaction.editReply("✅ Nenhum pedido atrasado.");
+    return;
   }
 
   await interaction.editReply(
