@@ -77,7 +77,12 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
-    if (status !== "em andamento" || dias === null || dias < 0 || dias > 7) continue;
+    if (
+      !["em andamento", "aceito"].includes(status) ||
+      dias === null ||
+      dias < 0 ||
+      dias > 7
+    ) continue;
 
     await canal.send(buildMensagem(id, titulo, prazo, "Betagem"));
     count++;

@@ -11,7 +11,11 @@
   },
   "private": true,
   "devDependencies": {
+    "@types/node": "catalog:",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.4"
   }
 }
