@@ -24,9 +24,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       fetchRows(DESIGN_URL),
     ]);
 
-    const pendentes: string[] = [];
+    const betagemPendentes: string[] = [];
+    const designPendentes: string[] = [];
 
-    for (const row of [...betagem, ...design]) {
+    // 🔵 BETAGEM
+    for (const row of betagem) {
       const status = (row["STATUS"] ?? "").trim().toUpperCase();
 
       if (status === "ENTREGUE") continue;
@@ -37,18 +39,52 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         row["Prazo de entrega:"]?.trim() ||
         "sem prazo";
 
-      pendentes.push(`🟡 ${titulo} • ${status} • ${prazo}`);
+      betagemPendentes.push(
+        `🟡 ${titulo} • ${status} • ${prazo}`
+      );
     }
 
-    if (!pendentes.length) {
+    // 🎨 DESIGN
+    for (const row of design) {
+      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+
+      if (status === "ENTREGUE") continue;
+
+      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const prazo =
+        row["Prazo de entrega"]?.trim() ||
+        row["Prazo de entrega:"]?.trim() ||
+        "sem prazo";
+
+      designPendentes.push(
+        `🟡 ${titulo} • ${status} • ${prazo}`
+      );
+    }
+
+    // 📭 se não tiver nada
+    if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
+      return;
     }
 
-    const texto = pendentes.join("\n").slice(0, 1800);
+    // 📦 monta resposta final
+    let texto = "📋 **Pedidos pendentes:**\n\n";
 
-    await interaction.editReply(
-      `📋 **Pedidos pendentes:**\n\n${texto}`
-    );
+    if (betagemPendentes.length) {
+      texto += "🎬 **BETAGEM**\n";
+      texto += betagemPendentes.join("\n") + "\n\n";
+    } else {
+      texto += "🎬 **BETAGEM**\nNenhum pedido pendente.\n\n";
+    }
+
+    if (designPendentes.length) {
+      texto += "🎨 **DESIGN**\n";
+      texto += designPendentes.join("\n") + "\n";
+    } else {
+      texto += "🎨 **DESIGN**\nNenhum pedido pendente.\n";
+    }
+
+    await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
     console.error("Erro no /pendentes:", err);
     await interaction.editReply(
