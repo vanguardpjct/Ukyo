@@ -1,27 +1,19 @@
+import axios from "axios";
+import csvParser from "csv-parser";
+import { Readable } from "stream";
+
 export type Row = Record<string, string>;
 
 export async function fetchRows(url: string): Promise<Row[]> {
-  const res = await fetch(url);
+  const response = await axios.get(url);
 
-  if (!res.ok) {
-    throw new Error(`Erro ao buscar planilha: ${res.status}`);
-  }
+  return new Promise((resolve, reject) => {
+    const rows: Row[] = [];
 
-  const text = await res.text();
-
-  const lines = text.trim().split("\n");
-
-  const headers = lines[0].split(",").map((h) => h.trim());
-
-  return lines.slice(1).map((line) => {
-    const values = line.split(",");
-
-    const row: Row = {};
-
-    headers.forEach((h, i) => {
-      row[h] = values[i]?.trim() ?? "";
-    });
-
-    return row;
+    Readable.from(response.data)
+      .pipe(csvParser())
+      .on("data", (row: Row) => rows.push(row))
+      .on("end", () => resolve(rows))
+      .on("error", reject);
   });
 }
