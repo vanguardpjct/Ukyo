@@ -44,8 +44,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return interaction.editReply("✅ Nenhum pedido pendente.");
     }
 
+    const texto = pendentes.join("\n").slice(0, 1800);
+
     return interaction.editReply(
-      `📋 **Pedidos pendentes:**\n\n${pendentes.join("\n")}`
+      `📋 **Pedidos pendentes:**\n\n${texto}`
     );
   } catch (err) {
     console.error("Erro no /pendentes:", err);
