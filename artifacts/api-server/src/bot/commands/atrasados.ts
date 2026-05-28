@@ -11,22 +11,22 @@ const BASE =
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
 
-function diasAtraso(prazo?: string): number | null {
-  if (!prazo) return null;
+function diasDesde(data?: string): number | null {
+  if (!data) return null;
 
-  const dataPrazo = new Date(prazo);
-  if (isNaN(dataPrazo.getTime())) return null;
+  const inicio = new Date(data);
+  if (isNaN(inicio.getTime())) return null;
 
   const hoje = new Date();
 
-  const diffMs = hoje.getTime() - dataPrazo.getTime();
+  const diffMs = hoje.getTime() - inicio.getTime();
 
   return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 }
 
 export const data = new SlashCommandBuilder()
   .setName("atrasados")
-  .setDescription("Mostra pedidos atrasados");
+  .setDescription("Mostra pedidos atrasados (15 dias)");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
@@ -47,14 +47,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const titulo =
         row["Titulo da história"]?.trim() || "Sem título";
 
-      const prazo =
-        row["Prazo de entrega"]?.trim() ||
-        row["Prazo de entrega:"]?.trim();
+      const dataInicio =
+        row["Data de entrega"]?.trim() ||
+        row["Data de entrega:"]?.trim();
 
-      const dias = diasAtraso(prazo);
+      const dias = diasDesde(dataInicio);
 
-      if (dias !== null && dias > 0) {
-        atrasados.push(`🔴 ${titulo} • ${dias} dia(s) atrasado`);
+      if (dias !== null && dias > 15) {
+        const excesso = dias - 15;
+
+        atrasados.push(
+          `🔴 ${titulo} • ${excesso} dia(s) atrasado (de ${dias} dias)`
+        );
       }
     }
 
