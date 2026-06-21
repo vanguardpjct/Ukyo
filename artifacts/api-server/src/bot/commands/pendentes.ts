@@ -3,7 +3,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-import { fetchRows } from "../utils/sheets";
+import { fetchSheetCSV } from "../utils/sheets";
 
 const BASE =
   "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
@@ -20,8 +20,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   try {
     const [betagem, design] = await Promise.all([
-      fetchRows(BETAGEM_URL),
-      fetchRows(DESIGN_URL),
+      fetchSheetCSV(BETAGEM_URL),
+      fetchSheetCSV(DESIGN_URL),
     ]);
 
     const betagemPendentes: string[] = [];

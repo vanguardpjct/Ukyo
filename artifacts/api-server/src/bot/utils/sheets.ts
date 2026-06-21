@@ -1,19 +1,23 @@
-import axios from "axios";
-import csvParser from "csv-parser";
-import { Readable } from "stream";
+export async function fetchSheetCSV(url: string) {
+  const res = await fetch(url);
+  const text = await res.text();
 
-export type Row = Record<string, string>;
+  const lines = text
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
 
-export async function fetchRows(url: string): Promise<Row[]> {
-  const response = await axios.get(url);
+  const headers = lines[0].split(",");
 
-  return new Promise((resolve, reject) => {
-    const rows: Row[] = [];
+  return lines.slice(1).map(line => {
+    const values = line.split(",");
 
-    Readable.from(response.data)
-      .pipe(csvParser())
-      .on("data", (row: Row) => rows.push(row))
-      .on("end", () => resolve(rows))
-      .on("error", reject);
+    const obj: Record<string, string> = {};
+
+    headers.forEach((h, i) => {
+      obj[h.trim()] = (values[i] ?? "").trim();
+    });
+
+    return obj;
   });
 }

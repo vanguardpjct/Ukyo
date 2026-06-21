@@ -157,6 +157,9 @@ importers:
       axios:
         specifier: ^1.16.1
         version: 1.16.1
+      csv-parse:
+        specifier: ^7.0.0
+        version: 7.0.0
       csv-parser:
         specifier: ^3.2.1
         version: 3.2.1
@@ -1760,6 +1763,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  csv-parse@7.0.0:
+    resolution: {integrity: sha512-CSssqPAK5us09FhMI9juM0jnqXUJP+rtWeIfivTYBLNH/8rnxkQlZvoRemF6MAyfNov9XU8mN2wwF/pP68sxTA==}
 
   csv-parser@3.2.1:
     resolution: {integrity: sha512-v8RPMSglouR9od735SnwSxLBbCJqEPSbgm1R5qfr8yIiMUCEFjox56kRZid0SvgHJEkxeIEu3+a9QS3YRh7CuA==}
@@ -4560,6 +4566,8 @@ snapshots:
       which: 2.0.2
 
   csstype@3.2.3: {}
+
+  csv-parse@7.0.0: {}
 
   csv-parser@3.2.1: {}
 
