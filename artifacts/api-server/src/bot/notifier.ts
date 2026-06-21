@@ -13,8 +13,10 @@ async function fetchRows(url: string): Promise<Record<string, string>[]> {
   const response = await axios.get<NodeJS.ReadableStream>(url, {
     responseType: "stream",
   });
+
   return new Promise((resolve, reject) => {
     const rows: Record<string, string>[] = [];
+
     (response.data as NodeJS.ReadableStream)
       .pipe(csvParser({ skipLines: 1 }))
       .on("data", (row: Record<string, string>) => rows.push(row))
@@ -25,36 +27,42 @@ async function fetchRows(url: string): Promise<Record<string, string>[]> {
 
 function calcularDias(prazo: string): number | null {
   const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+
   if (!match) return null;
 
-  const day = parseInt(match[1], 10);
-  const month = parseInt(match[2], 10) - 1;
-  const year = parseInt(match[3], 10);
-
-  const inicio = new Date(year, month, day);
-
-  // prazo total = 15 dias
-  const limite = new Date(inicio);
-  limite.setDate(limite.getDate() + 15);
+  const day = parseInt(match[1]!, 10);
+  const month = parseInt(match[2]!, 10) - 1;
 
   const hoje = new Date();
+  const deadline = new Date(hoje.getFullYear(), month, day);
+
   hoje.setHours(0, 0, 0, 0);
+  deadline.setHours(0, 0, 0, 0);
 
-  const diffMs = limite.getTime() - hoje.getTime();
+  const diff = deadline.getTime() - hoje.getTime();
 
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function formatarData(prazo: string): string {
   const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+
   if (!match) return prazo;
+
   const day = parseInt(match[1]!, 10);
   const month = parseInt(match[2]!, 10) - 1;
+
   const date = new Date(new Date().getFullYear(), month, day);
+
   return date.toLocaleDateString("pt-BR");
 }
 
-function buildMensagem(id: string, titulo: string, prazo: string, tipo: string): string {
+function buildMensagem(
+  id: string,
+  titulo: string,
+  prazo: string,
+  tipo: string,
+): string {
   return (
     `\u200B\n` +
     `📍 Pedido próximo!\n` +
@@ -65,13 +73,18 @@ function buildMensagem(id: string, titulo: string, prazo: string, tipo: string):
   );
 }
 
-export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
+export async function enviarNotificacoes(
+  canal: TextChannel,
+): Promise<number> {
   logger.info("Buscando dados da planilha...");
 
   const [betagem, design] = await Promise.all([
     fetchRows(BETAGEM_URL),
     fetchRows(DESIGN_URL),
   ]);
+
+  logger.info(`Betagem carregada: ${betagem.length}`);
+  logger.info(`Design carregado: ${design.length}`);
 
   let count = 0;
 
@@ -84,16 +97,25 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
+
     if (
       !["em andamento", "aceito"].includes(status) ||
       dias === null ||
       dias < 0 ||
       dias > 7
-    ) continue;
+    ) {
+      continue;
+    }
 
-    await canal.send(buildMensagem(id, titulo, prazo, "Betagem"));
+    logger.info(`Enviando aviso Betagem: ${titulo}`);
+
+    await canal.send(
+      buildMensagem(id, titulo, prazo, "Betagem"),
+    );
+
     count++;
-    await new Promise((r) => setTimeout(r, 1200));
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
   }
 
   for (const row of design) {
@@ -105,18 +127,28 @@ export async function enviarNotificacoes(canal: TextChannel): Promise<number> {
     if (!id || !titulo || !prazo) continue;
 
     const dias = calcularDias(prazo);
+
     if (
       !["em andamento", "aceito"].includes(status) ||
       dias === null ||
       dias < 0 ||
       dias > 7
-    ) continue;
+    ) {
+      continue;
+    }
 
-    await canal.send(buildMensagem(id, titulo, prazo, "Design"));
+    logger.info(`Enviando aviso Design: ${titulo}`);
+
+    await canal.send(
+      buildMensagem(id, titulo, prazo, "Design"),
+    );
+
     count++;
-    await new Promise((r) => setTimeout(r, 1200));
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
   }
 
   logger.info({ count }, "Notificações enviadas");
+
   return count;
 }
