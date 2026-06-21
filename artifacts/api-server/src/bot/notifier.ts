@@ -25,36 +25,40 @@ async function fetchRows(url: string): Promise<Record<string, string>[]> {
   });
 }
 
-function calcularDias(prazo: string): number | null {
-  const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+  function calcularDias(prazo: string): number | null {
+    const match = prazo.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
 
-  if (!match) return null;
+    if (!match) return null;
 
-  const day = parseInt(match[1]!, 10);
-  const month = parseInt(match[2]!, 10) - 1;
+    const month = parseInt(match[1], 10) - 1;
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
 
-  const hoje = new Date();
-  const deadline = new Date(hoje.getFullYear(), month, day);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
 
-  hoje.setHours(0, 0, 0, 0);
-  deadline.setHours(0, 0, 0, 0);
+    const deadline = new Date(year, month, day);
+    deadline.setHours(0, 0, 0, 0);
 
-  const diff = deadline.getTime() - hoje.getTime();
+    const diff = deadline.getTime() - hoje.getTime();
 
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  
 }
 
-function formatarData(prazo: string): string {
-  const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
+  function formatarData(prazo: string): string {
+    const match = prazo.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
 
-  if (!match) return prazo;
+    if (!match) return prazo;
 
-  const day = parseInt(match[1]!, 10);
-  const month = parseInt(match[2]!, 10) - 1;
+    const month = parseInt(match[1], 10) - 1;
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
 
-  const date = new Date(new Date().getFullYear(), month, day);
+    const date = new Date(year, month, day);
 
-  return date.toLocaleDateString("pt-BR");
+    return date.toLocaleDateString("pt-BR");
+  
 }
 
 function buildMensagem(
