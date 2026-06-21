@@ -27,16 +27,22 @@ function calcularDias(prazo: string): number | null {
   const match = prazo.match(/^(\d{1,2})\/(\d{1,2})$/);
   if (!match) return null;
 
-  const day = parseInt(match[1]!, 10);
-  const month = parseInt(match[2]!, 10) - 1;
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1;
   const year = parseInt(match[3], 10);
 
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const deadline = new Date(ano, month, day);
+  const inicio = new Date(year, month, day);
 
-  const diff = deadline.getTime() - hoje.setHours(0, 0, 0, 0);
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  // prazo total = 15 dias
+  const limite = new Date(inicio);
+  limite.setDate(limite.getDate() + 15);
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const diffMs = limite.getTime() - hoje.getTime();
+
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
 function formatarData(prazo: string): string {
