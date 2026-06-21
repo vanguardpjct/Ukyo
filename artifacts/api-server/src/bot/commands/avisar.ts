@@ -22,7 +22,6 @@ function diasRestantes(dataStr: string): number | null {
   if (!dataStr) return null;
 
   const dataLimpa = dataStr.split(" ")[0];
-
   const partes = dataLimpa.split("/");
 
   if (partes.length !== 3) return null;
@@ -34,7 +33,6 @@ function diasRestantes(dataStr: string): number | null {
   const prazo = new Date(ano, mes, dia);
 
   const hoje = new Date();
-
   hoje.setHours(0, 0, 0, 0);
   prazo.setHours(0, 0, 0, 0);
 
@@ -55,7 +53,7 @@ function buildMensagem(
     `<@${id}>\n` +
     `🎨 ${titulo}\n` +
     `🗓️ ${prazo}\n` +
-    `📌 ${tipo}\n`
+    `📌 ${tipo}`
   );
 }
 
@@ -83,73 +81,68 @@ export async function execute(
 
     let enviados = 0;
 
-    // 🎬 BETAGEM
-    for (const row of betagem) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+    const processar = async (
+      rows: Record<string, string>[],
+      tipo: string
+    ) => {
+      for (const row of rows) {
+        const status = (row["STATUS"] ?? "")
+          .trim()
+          .toUpperCase();
 
-      if (status === "ENTREGUE") continue;
+        if (
+          status !== "ACEITO" &&
+          status !== "EM ANDAMENTO"
+        ) {
+          continue;
+        }
 
-      const id = row["ID DO DISCORD"]?.trim();
-      const titulo =
-        row["Titulo da história"]?.trim() || "Sem título";
+        const id =
+          row["ID DO DISCORD"]?.trim() || "";
 
-      const prazo =
-        row["Prazo de entrega"]?.trim() ||
-        row["Prazo de entrega:"]?.trim();
+        const prazo =
+          row["PRAZO DE ENTREGA"]?.trim() ||
+          row["Prazo de entrega"]?.trim() ||
+          row["Prazo de entrega:"]?.trim() ||
+          "";
 
-      if (!id || !prazo) continue;
+        const titulo =
+          row["TITULO"]?.trim() ||
+          row["Titulo da história"]?.trim() ||
+          "Sem título";
 
-      const dias = diasRestantes(prazo);
+        if (!id || !prazo) continue;
 
-      if (dias === null) continue;
+        const dias = diasRestantes(prazo);
 
-      if (dias <= 7) {
-        await canal.send(
-          buildMensagem(
-            id,
-            titulo,
-            prazo,
-            "BETAGEM"
-          )
-        );
+        if (dias === null) continue;
 
-        enviados++;
+        console.log({
+          tipo,
+          titulo,
+          status,
+          prazo,
+          dias,
+          id,
+        });
+
+        if (dias <= 7) {
+          await canal.send(
+            buildMensagem(
+              id,
+              titulo,
+              prazo,
+              tipo
+            )
+          );
+
+          enviados++;
+        }
       }
-    }
+    };
 
-    // 🎨 DESIGN
-    for (const row of design) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
-
-      if (status === "ENTREGUE") continue;
-
-      const id = row["ID DO DISCORD"]?.trim();
-      const titulo =
-        row["Titulo da história"]?.trim() || "Sem título";
-
-      const prazo =
-        row["Prazo de entrega"]?.trim() ||
-        row["Prazo de entrega:"]?.trim();
-
-      if (!id || !prazo) continue;
-
-      const dias = diasRestantes(prazo);
-
-      if (dias === null) continue;
-
-      if (dias <= 7) {
-        await canal.send(
-          buildMensagem(
-            id,
-            titulo,
-            prazo,
-            "DESIGN"
-          )
-        );
-
-        enviados++;
-      }
-    }
+    await processar(betagem, "BETAGEM");
+    await processar(design, "DESIGN");
 
     await interaction.editReply(
       `✅ Avisos enviados: ${enviados}`
