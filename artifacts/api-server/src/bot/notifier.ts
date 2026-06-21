@@ -29,6 +29,7 @@ function calcularDias(prazo: string): number | null {
 
   const day = parseInt(match[1]!, 10);
   const month = parseInt(match[2]!, 10) - 1;
+  const year = parseInt(match[3], 10);
 
   const hoje = new Date();
   const ano = hoje.getFullYear();
