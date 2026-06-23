@@ -11,7 +11,7 @@ const BASE =
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
 
-// 🔧 limpa linhas vazias
+// 🔧 remove linhas vazias
 function limparLinhas(rows: any[]) {
   return rows.filter((row) => {
     if (!row) return false;
@@ -22,7 +22,7 @@ function limparLinhas(rows: any[]) {
   });
 }
 
-// 🔧 normaliza headers (remove espaços invisíveis)
+// 🔧 normaliza nomes de colunas (remove espaços invisíveis)
 function normalizarRow(row: any) {
   const obj: any = {};
 
@@ -33,9 +33,9 @@ function normalizarRow(row: any) {
   return obj;
 }
 
-// 🔧 leitura segura de campo
-function get(row: any, key: string, fallback = "") {
-  return String(row?.[key] ?? fallback).trim();
+// 🔧 leitura segura
+function get(row: any, key: string) {
+  return String(row?.[key] ?? "").trim();
 }
 
 export const data = new SlashCommandBuilder()
@@ -59,9 +59,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
-    // =========================
+    // ======================
     // BETAGEM
-    // =========================
+    // ======================
     for (const row of betagem) {
       const status = get(row, "STATUS").toUpperCase();
 
@@ -83,9 +83,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       );
     }
 
-    // =========================
+    // ======================
     // DESIGN
-    // =========================
+    // ======================
     for (const row of design) {
       const status = get(row, "STATUS").toUpperCase();
 
@@ -107,9 +107,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       );
     }
 
-    // =========================
-    // RESPOSTA FINAL
-    // =========================
+    // ======================
+    // RESPOSTA
+    // ======================
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
