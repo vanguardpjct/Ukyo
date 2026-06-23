@@ -15,10 +15,13 @@ export const data = new SlashCommandBuilder()
   .setName("pendentes")
   .setDescription("Mostra pedidos pendentes");
 
-// 🔥 helper para evitar bugs de chave
-function getValue(row: any, keys: string[]) {
+// 🔥 helper seguro de leitura
+function get(row: any, keys: string[]) {
   for (const key of keys) {
-    if (row?.[key]?.trim()) return row[key].trim();
+    const value = row?.[key];
+    if (value && value.toString().trim()) {
+      return value.toString().trim();
+    }
   }
   return "";
 }
@@ -37,13 +40,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // 🔵 BETAGEM
     for (const row of betagem) {
-      const status = getValue(row, ["status"]).toUpperCase();
+      const status = get(row, ["status"]).toUpperCase();
 
       if (!status || status === "ENTREGUE") continue;
 
-      const titulo = getValue(row, ["titulo da história", "titulo da historia"]) || "Sem título";
-
-      const prazo = getValue(row, ["prazo de entrega"]) || "sem prazo";
+      const titulo = get(row, ["titulo da historia"]) || "Sem título";
+      const prazo = get(row, ["prazo de entrega"]) || "sem prazo";
 
       betagemPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
@@ -52,20 +54,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // 🎨 DESIGN
     for (const row of design) {
-      const status = getValue(row, ["status"]).toUpperCase();
+      const status = get(row, ["status"]).toUpperCase();
 
       if (!status || status === "ENTREGUE") continue;
 
-      const titulo = getValue(row, ["titulo da história", "titulo da historia"]) || "Sem título";
-
-      const prazo = getValue(row, ["prazo de entrega"]) || "sem prazo";
+      const titulo = get(row, ["titulo da historia"]) || "Sem título";
+      const prazo = get(row, ["prazo de entrega"]) || "sem prazo";
 
       designPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
       );
     }
 
-    // 📭 vazio
+    // 📭 vazio total
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;

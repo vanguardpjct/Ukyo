@@ -1,5 +1,13 @@
 import { parse } from "csv-parse/sync";
 
+function normalize(str: string) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .trim()
+    .toLowerCase();
+}
+
 export async function fetchRows(url: string): Promise<any[]> {
   const res = await fetch(url);
   const text = await res.text();
@@ -12,9 +20,14 @@ export async function fetchRows(url: string): Promise<any[]> {
     trim: true,
   });
 
-  return records.filter((row: any) =>
-    Object.values(row).some(
-      (v: any) => v && v.toString().trim() !== ""
-    )
-  );
+  // 🔥 normaliza TODAS as chaves dos objetos
+  return records.map((row: any) => {
+    const obj: any = {};
+
+    for (const key of Object.keys(row)) {
+      obj[normalize(key)] = row[key];
+    }
+
+    return obj;
+  });
 }
