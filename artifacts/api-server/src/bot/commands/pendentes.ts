@@ -1,3 +1,4 @@
+
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
@@ -23,51 +24,83 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       fetchRows(BETAGEM_URL),
       fetchRows(DESIGN_URL),
     ]);
+    console.log("Primeira linha BETAGEM:");
+    console.log(betagem[0]);
+
+    console.log("Colunas BETAGEM:");
+    console.log(Object.keys(betagem[0] ?? {}));
+
+    console.log("Primeira linha DESIGN:");
+    console.log(design[0]);
+
+    console.log("Colunas DESIGN:");
+    console.log(Object.keys(design[0] ?? {}));
 
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
+    // 🔵 BETAGEM
     for (const row of betagem) {
-      const status = String(row["STATUS"] ?? "").trim().toUpperCase();
-      if (!status || status === "ENTREGUE") continue;
+      const status = (row["STATUS"] ?? "").trim().toUpperCase();
 
-      const titulo = String(row["Titulo da história"] ?? "").trim();
-      const prazo = String(row["Prazo de entrega"] ?? "").trim();
+      if (status === "ENTREGUE") continue;
+
+      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const prazo =
+        row["Prazo de entrega"]?.trim() ||
+        row["Prazo de entrega:"]?.trim() ||
+        "sem prazo";
 
       betagemPendentes.push(
-        `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
+        `🟡 ${titulo} • ${status} • ${prazo}`
       );
     }
 
+    // 🎨 DESIGN
     for (const row of design) {
-      const status = String(row["STATUS"] ?? "").trim().toUpperCase();
-      if (!status || status === "ENTREGUE") continue;
+      const status = (row["STATUS"] ?? "").trim().toUpperCase();
 
-      const titulo = String(row["Titulo da história"] ?? "").trim();
-      const prazo = String(row["Prazo de entrega"] ?? "").trim();
+      if (status === "ENTREGUE") continue;
+
+      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const prazo =
+        row["Prazo de entrega"]?.trim() ||
+        row["Prazo de entrega:"]?.trim() ||
+        "sem prazo";
 
       designPendentes.push(
-        `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
+        `🟡 ${titulo} • ${status} • ${prazo}`
       );
     }
 
+    // 📭 se não tiver nada
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
     }
 
+    // 📦 monta resposta final
     let texto = "📋 **Pedidos pendentes:**\n\n";
 
-    texto += "🎬 **BETAGEM**\n";
-    texto += betagemPendentes.join("\n") || "Nenhum pedido pendente.";
-    texto += "\n\n";
+    if (betagemPendentes.length) {
+      texto += "🎬 **BETAGEM**\n";
+      texto += betagemPendentes.join("\n") + "\n\n";
+    } else {
+      texto += "🎬 **BETAGEM**\nNenhum pedido pendente.\n\n";
+    }
 
-    texto += "🎨 **DESIGN**\n";
-    texto += designPendentes.join("\n") || "Nenhum pedido pendente.";
+    if (designPendentes.length) {
+      texto += "🎨 **DESIGN**\n";
+      texto += designPendentes.join("\n") + "\n";
+    } else {
+      texto += "🎨 **DESIGN**\nNenhum pedido pendente.\n";
+    }
 
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
-    console.error(err);
-    await interaction.editReply("❌ Erro ao buscar dados da planilha.");
+    console.error("Erro no /pendentes:", err);
+    await interaction.editReply(
+      "❌ Erro ao buscar dados da planilha."
+    );
   }
 }

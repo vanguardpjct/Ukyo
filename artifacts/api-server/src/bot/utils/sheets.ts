@@ -4,25 +4,27 @@ export async function fetchRows(url: string): Promise<any[]> {
 
   const lines = text
     .split("\n")
-    .filter((l: string) => l && l.trim() !== "");
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) return [];
 
   const headers = parseCSVLine(lines[0]);
 
-  const rows = lines.slice(1).map((line: string) => {
+  return lines.slice(1).map((line) => {
     const values = parseCSVLine(line);
 
     const obj: any = {};
 
-    headers.forEach((h: string, i: number) => {
-      obj[String(h).trim()] = values[i] ?? "";
+    headers.forEach((h, i) => {
+      obj[h] = values[i] ?? "";
     });
 
     return obj;
   });
-
-  return rows;
 }
 
+// CSV parser seguro (suporta vírgula dentro de aspas)
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -43,7 +45,7 @@ function parseCSVLine(line: string): string[] {
     }
 
     if (char === "," && !inQuotes) {
-      result.push(current);
+      result.push(current.trim());
       current = "";
       continue;
     }
@@ -51,6 +53,7 @@ function parseCSVLine(line: string): string[] {
     current += char;
   }
 
-  result.push(current);
-  return result.map((v: string) => v.trim());
+  result.push(current.trim());
+
+  return result;
 }
