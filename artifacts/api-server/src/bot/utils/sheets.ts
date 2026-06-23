@@ -6,10 +6,12 @@ export async function fetchRows(url: string): Promise<any[]> {
 
   if (lines.length === 0) return [];
 
-  // 🔥 normaliza headers (evita problema de espaços e diferenças de escrita)
-  const headers = parseCSVLine(lines[0]).map((h) =>
-    h.trim().toLowerCase()
-  );
+  // 🔥 pega headers e remove vazios (corrige colunas fantasmas do Google Sheets)
+  const rawHeaders = parseCSVLine(lines[0]);
+
+  const headers = rawHeaders
+    .map((h) => h.trim().toLowerCase())
+    .filter((h) => h && h.length > 0);
 
   const rows = lines.slice(1).map((line) => {
     const values = parseCSVLine(line);
@@ -23,7 +25,7 @@ export async function fetchRows(url: string): Promise<any[]> {
     return obj;
   });
 
-  // 🔥 remove linhas totalmente vazias (corrige seu bug de “pendentes fantasmas”)
+  // 🔥 remove linhas totalmente vazias
   return rows.filter((row) =>
     Object.values(row).some(
       (v) => v && v.toString().trim() !== ""
@@ -31,7 +33,7 @@ export async function fetchRows(url: string): Promise<any[]> {
   );
 }
 
-// CSV parser seguro (mantido, mas levemente ajustado)
+// CSV parser seguro (com suporte a aspas)
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -40,20 +42,20 @@ function parseCSVLine(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
 
-    // aspas duplas escapadas ""
+    // aspas escapadas ""
     if (char === '"' && line[i + 1] === '"') {
       current += '"';
       i++;
       continue;
     }
 
-    // toggle de aspas
+    // toggle aspas
     if (char === '"') {
       inQuotes = !inQuotes;
       continue;
     }
 
-    // separador de coluna
+    // separador CSV
     if (char === "," && !inQuotes) {
       result.push(current);
       current = "";

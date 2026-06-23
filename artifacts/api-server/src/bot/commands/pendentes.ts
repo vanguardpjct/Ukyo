@@ -15,6 +15,14 @@ export const data = new SlashCommandBuilder()
   .setName("pendentes")
   .setDescription("Mostra pedidos pendentes");
 
+// 🔥 helper para evitar bugs de chave
+function getValue(row: any, keys: string[]) {
+  for (const key of keys) {
+    if (row?.[key]?.trim()) return row[key].trim();
+  }
+  return "";
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
@@ -29,15 +37,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // 🔵 BETAGEM
     for (const row of betagem) {
-      const status = (row["status"] ?? "").trim().toUpperCase();
+      const status = getValue(row, ["status"]).toUpperCase();
 
       if (!status || status === "ENTREGUE") continue;
 
-      const titulo =
-        row["titulo da história"]?.trim() || "Sem título";
+      const titulo = getValue(row, ["titulo da história", "titulo da historia"]) || "Sem título";
 
-      const prazo =
-        row["prazo de entrega"]?.trim() || "sem prazo";
+      const prazo = getValue(row, ["prazo de entrega"]) || "sem prazo";
 
       betagemPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
@@ -46,22 +52,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // 🎨 DESIGN
     for (const row of design) {
-      const status = (row["status"] ?? "").trim().toUpperCase();
+      const status = getValue(row, ["status"]).toUpperCase();
 
       if (!status || status === "ENTREGUE") continue;
 
-      const titulo =
-        row["titulo da história"]?.trim() || "Sem título";
+      const titulo = getValue(row, ["titulo da história", "titulo da historia"]) || "Sem título";
 
-      const prazo =
-        row["prazo de entrega"]?.trim() || "sem prazo";
+      const prazo = getValue(row, ["prazo de entrega"]) || "sem prazo";
 
       designPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
       );
     }
 
-    // 📭 vazio total
+    // 📭 vazio
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
@@ -83,8 +87,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
     console.error("Erro no /pendentes:", err);
-    await interaction.editReply(
-      "❌ Erro ao buscar dados da planilha."
-    );
+    await interaction.editReply("❌ Erro ao buscar dados da planilha.");
   }
 }
