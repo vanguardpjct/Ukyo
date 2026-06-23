@@ -7,7 +7,7 @@ import { fetchRows } from "../utils/sheets";
 import { estaAtrasado } from "../utils/atrasados";
 
 const BASE =
-  "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
+  "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/export?format=csv";
 
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
@@ -35,48 +35,43 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       fetchRows(DESIGN_URL),
     ]);
 
+    console.log("BETAGEM:", betagem.length);
+    console.log("DESIGN:", design.length);
+
     const atrasadosBetagem: string[] = [];
     const atrasadosDesign: string[] = [];
 
     // 🔵 BETAGEM
     for (const row of betagem) {
       const status = get(row, ["status"]).toUpperCase();
-
       if (status === "ENTREGUE") continue;
 
       const titulo = get(row, ["titulo da historia"]) || "Sem título";
       const prazo = get(row, ["prazo de entrega"]);
 
       if (estaAtrasado(prazo)) {
-        atrasadosBetagem.push(
-          `🔴 ${titulo} • ${status} • ${prazo}`
-        );
+        atrasadosBetagem.push(`🔴 ${titulo} • ${status} • ${prazo}`);
       }
     }
 
     // 🎨 DESIGN
     for (const row of design) {
       const status = get(row, ["status"]).toUpperCase();
-
       if (status === "ENTREGUE") continue;
 
       const titulo = get(row, ["titulo da historia"]) || "Sem título";
       const prazo = get(row, ["prazo de entrega"]);
 
       if (estaAtrasado(prazo)) {
-        atrasadosDesign.push(
-          `🔴 ${titulo} • ${status} • ${prazo}`
-        );
+        atrasadosDesign.push(`🔴 ${titulo} • ${status} • ${prazo}`);
       }
     }
 
-    // 📭 nada atrasado
     if (!atrasadosBetagem.length && !atrasadosDesign.length) {
       await interaction.editReply("✅ Nenhum pedido atrasado.");
       return;
     }
 
-    // 📦 resposta final
     let texto = "⏰ **Pedidos atrasados:**\n\n";
 
     texto += "🎬 **BETAGEM**\n";
