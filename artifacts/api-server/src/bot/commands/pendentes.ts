@@ -11,15 +11,30 @@ const BASE =
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
 
+// ======================
+// LIMPEZA DE LINHAS
+// ======================
 function limparLinhas(rows: any[]) {
-  return rows.filter((row) =>
-    Array.isArray(row) &&
-    row.some((v) => String(v ?? "").trim() !== "")
-  );
+  return rows.filter((row) => {
+    if (!row) return false;
+
+    return Object.values(row).some(
+      (v) => String(v ?? "").trim() !== ""
+    );
+  });
 }
 
-function get(row: any[], index: number) {
-  return String(row?.[index] ?? "").trim();
+// ======================
+// GET SEGURO (multi-chave)
+// ======================
+function get(row: any, keys: string[]) {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value && String(value).trim() !== "") {
+      return String(value).trim();
+    }
+  }
+  return "";
 }
 
 export const data = new SlashCommandBuilder()
@@ -27,6 +42,8 @@ export const data = new SlashCommandBuilder()
   .setDescription("Mostra pedidos pendentes");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  console.log("🚨 /pendentes chamado");
+
   await interaction.deferReply();
 
   try {
@@ -41,41 +58,61 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
-    // =========================
+    // ======================
     // BETAGEM
-    // =========================
+    // ======================
     for (const row of betagem) {
-      const titulo = get(row, 10); // K
-      const status = get(row, 4).toUpperCase(); // E
-      const prazo = get(row, 25); // Z
+      const status = get(row, ["STATUS", "Status"]).toUpperCase();
 
       if (!status) continue;
       if (status === "ENTREGUE") continue;
+
+      const titulo = get(row, [
+        "Titulo da história",
+        "Título da história",
+        "Titulo",
+        "Título",
+      ]);
+
+      const prazo = get(row, [
+        "Prazo de entrega",
+        "Prazo de entrega:",
+      ]);
 
       betagemPendentes.push(
         `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
       );
     }
 
-    // =========================
+    // ======================
     // DESIGN
-    // =========================
+    // ======================
     for (const row of design) {
-      const titulo = get(row, 10); // K
-      const status = get(row, 4).toUpperCase(); // E
-      const prazo = get(row, 25); // Z
+      const status = get(row, ["STATUS", "Status"]).toUpperCase();
 
       if (!status) continue;
       if (status === "ENTREGUE") continue;
+
+      const titulo = get(row, [
+        "Titulo da história",
+        "Título da história",
+        "Titulo",
+        "Título",
+      ]);
+
+      const prazo = get(row, [
+        "Prazo de entrega",
+        "Prazo de entrega:",
+      ]);
 
       designPendentes.push(
         `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
       );
     }
 
-    // =========================
-    // RESPOSTA
-    // =========================
+    // ======================
+    // RESPOSTA FINAL
+    // ======================
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
@@ -84,15 +121,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     let texto = "📋 **Pedidos pendentes:**\n\n";
 
     texto += "🎬 **BETAGEM**\n";
-    texto += betagemPendentes.join("\n") || "Nenhum pedido pendente.";
+    texto += betagemPendentes.length
+      ? betagemPendentes.join("\n")
+      : "Nenhum pedido pendente.";
     texto += "\n\n";
 
     texto += "🎨 **DESIGN**\n";
-    texto += designPendentes.join("\n") || "Nenhum pedido pendente.";
+    texto += designPendentes.length
+      ? designPendentes.join("\n")
+      : "Nenhum pedido pendente.";
 
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
     console.error("❌ ERRO NO /pendentes:", err);
-    await interaction.editReply("❌ Erro ao buscar dados da planilha.");
+
+    await interaction.editReply(
+      "❌ Erro ao buscar dados da planilha."
+    );
   }
 }
