@@ -4,7 +4,7 @@ import {
   TextChannel,
 } from "discord.js";
 
-import { fetchSheetCSV } from "../utils/sheets";
+import { fetchRows } from "../utils/sheets";
 
 const CANAL_ID = "1358514235763855420";
 
@@ -64,8 +64,8 @@ export async function execute(
 
   try {
     const [betagem, design] = await Promise.all([
-      fetchSheetCSV(BETAGEM_URL),
-      fetchSheetCSV(DESIGN_URL),
+      fetchRows(BETAGEM_URL),
+      fetchRows(DESIGN_URL),
     ]);
 
     const canal = await interaction.client.channels.fetch(

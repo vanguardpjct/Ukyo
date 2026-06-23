@@ -1,23 +1,61 @@
-export async function fetchSheetCSV(url: string) {
+export type Row = Record<string, string>;
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  result.push(current.trim());
+
+  return result;
+}
+
+export async function fetchRows(url: string): Promise<Row[]> {
   const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error(`Erro ao buscar planilha: ${res.status}`);
+  }
+
   const text = await res.text();
 
   const lines = text
-    .split("\n")
-    .map(l => l.trim())
-    .filter(Boolean);
+    .split(/\r?\n/)
+    .filter((line) => line.trim().length > 0);
 
-  const headers = lines[0].split(",");
+  if (!lines.length) return [];
 
-  return lines.slice(1).map(line => {
-    const values = line.split(",");
+  const headers = parseCSVLine(lines[0]);
 
-    const obj: Record<string, string> = {};
+  console.log("Cabeçalhos encontrados:", headers);
 
-    headers.forEach((h, i) => {
-      obj[h.trim()] = (values[i] ?? "").trim();
+  return lines.slice(1).map((line) => {
+    const values = parseCSVLine(line);
+
+    const row: Row = {};
+
+    headers.forEach((header, index) => {
+      row[header.trim()] = values[index]?.trim() ?? "";
     });
 
-    return obj;
+    return row;
   });
 }

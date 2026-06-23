@@ -3,7 +3,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-import { fetchSheetCSV } from "../utils/sheets";
+import { fetchRows } from "../utils/sheets";
 
 const BASE =
   "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
@@ -16,77 +16,105 @@ export const data = new SlashCommandBuilder()
   .setDescription("Mostra pedidos pendentes");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  console.log("🔍 COMANDO /pendentes EXECUTADO");
+
   await interaction.deferReply();
 
   try {
     const [betagem, design] = await Promise.all([
-      fetchSheetCSV(BETAGEM_URL),
-      fetchSheetCSV(DESIGN_URL),
+      fetchRows(BETAGEM_URL),
+      fetchRows(DESIGN_URL),
     ]);
+
+    console.log("📊 BETAGEM:", betagem.length, "linhas");
+    console.log("📊 DESIGN:", design.length, "linhas");
+
+    console.log("📄 PRIMEIRA LINHA BETAGEM:");
+    console.log(JSON.stringify(betagem[0], null, 2));
+
+    console.log("📄 PRIMEIRA LINHA DESIGN:");
+    console.log(JSON.stringify(design[0], null, 2));
+
+    console.log("🧾 COLUNAS BETAGEM:");
+    console.log(Object.keys(betagem[0] ?? {}));
+
+    console.log("🧾 COLUNAS DESIGN:");
+    console.log(Object.keys(design[0] ?? {}));
 
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
-    // 🔵 BETAGEM
     for (const row of betagem) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+      const status = (row["STATUS"] ?? "")
+        .trim()
+        .toUpperCase();
 
       if (status === "ENTREGUE") continue;
 
-      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const titulo =
+        row["Titulo da história"]?.trim() ||
+        "Sem título";
+
       const prazo =
         row["Prazo de entrega"]?.trim() ||
         row["Prazo de entrega:"]?.trim() ||
         "sem prazo";
 
       betagemPendentes.push(
-        `🟡 ${titulo} • ${status} • ${prazo}`
+        `🟡 ${titulo} • ${status || "SEM STATUS"} • ${prazo}`
       );
     }
 
-    // 🎨 DESIGN
     for (const row of design) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+      const status = (row["STATUS"] ?? "")
+        .trim()
+        .toUpperCase();
 
       if (status === "ENTREGUE") continue;
 
-      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const titulo =
+        row["Titulo da história"]?.trim() ||
+        "Sem título";
+
       const prazo =
         row["Prazo de entrega"]?.trim() ||
         row["Prazo de entrega:"]?.trim() ||
         "sem prazo";
 
       designPendentes.push(
-        `🟡 ${titulo} • ${status} • ${prazo}`
+        `🟡 ${titulo} • ${status || "SEM STATUS"} • ${prazo}`
       );
     }
 
-    // 📭 se não tiver nada
     if (!betagemPendentes.length && !designPendentes.length) {
-      await interaction.editReply("✅ Nenhum pedido pendente.");
+      await interaction.editReply(
+        "✅ Nenhum pedido pendente."
+      );
       return;
     }
 
-    // 📦 monta resposta final
     let texto = "📋 **Pedidos pendentes:**\n\n";
 
     if (betagemPendentes.length) {
       texto += "🎬 **BETAGEM**\n";
-      texto += betagemPendentes.join("\n") + "\n\n";
+      texto += betagemPendentes.join("\n");
+      texto += "\n\n";
     } else {
       texto += "🎬 **BETAGEM**\nNenhum pedido pendente.\n\n";
     }
 
     if (designPendentes.length) {
       texto += "🎨 **DESIGN**\n";
-      texto += designPendentes.join("\n") + "\n";
+      texto += designPendentes.join("\n");
     } else {
-      texto += "🎨 **DESIGN**\nNenhum pedido pendente.\n";
+      texto += "🎨 **DESIGN**\nNenhum pedido pendente.";
     }
 
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
-    console.error("Erro no /pendentes:", err);
+    console.error("❌ ERRO NO /pendentes:");
+    console.error(err);
+
     await interaction.editReply(
       "❌ Erro ao buscar dados da planilha."
     );
