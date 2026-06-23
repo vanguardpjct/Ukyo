@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
   .setDescription("Mostra pedidos pendentes");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  console.log("🔍 COMANDO /pendentes EXECUTADO");
+  console.log("🚨 PENDENTES FOI CHAMADO 🚨");
 
   await interaction.deferReply();
 
@@ -26,8 +26,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       fetchRows(DESIGN_URL),
     ]);
 
-    console.log("📊 BETAGEM:", betagem.length, "linhas");
-    console.log("📊 DESIGN:", design.length, "linhas");
+    console.log("BETAGEM:", betagem.length);
+    console.log("DESIGN:", design.length);
 
     console.log("📄 PRIMEIRA LINHA BETAGEM:");
     console.log(JSON.stringify(betagem[0], null, 2));
