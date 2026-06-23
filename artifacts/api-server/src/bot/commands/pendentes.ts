@@ -1,4 +1,3 @@
-
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
@@ -24,32 +23,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       fetchRows(BETAGEM_URL),
       fetchRows(DESIGN_URL),
     ]);
-    console.log("Primeira linha BETAGEM:");
-    console.log(betagem[0]);
-
-    console.log("Colunas BETAGEM:");
-    console.log(Object.keys(betagem[0] ?? {}));
-
-    console.log("Primeira linha DESIGN:");
-    console.log(design[0]);
-
-    console.log("Colunas DESIGN:");
-    console.log(Object.keys(design[0] ?? {}));
 
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
     // 🔵 BETAGEM
     for (const row of betagem) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+      const status = (row["status"] ?? "").trim().toUpperCase();
 
-      if (status === "ENTREGUE") continue;
+      if (!status || status === "ENTREGUE") continue;
 
-      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const titulo =
+        row["titulo da história"]?.trim() || "Sem título";
+
       const prazo =
-        row["Prazo de entrega"]?.trim() ||
-        row["Prazo de entrega:"]?.trim() ||
-        "sem prazo";
+        row["prazo de entrega"]?.trim() || "sem prazo";
 
       betagemPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
@@ -58,43 +46,39 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // 🎨 DESIGN
     for (const row of design) {
-      const status = (row["STATUS"] ?? "").trim().toUpperCase();
+      const status = (row["status"] ?? "").trim().toUpperCase();
 
-      if (status === "ENTREGUE") continue;
+      if (!status || status === "ENTREGUE") continue;
 
-      const titulo = row["Titulo da história"]?.trim() || "Sem título";
+      const titulo =
+        row["titulo da história"]?.trim() || "Sem título";
+
       const prazo =
-        row["Prazo de entrega"]?.trim() ||
-        row["Prazo de entrega:"]?.trim() ||
-        "sem prazo";
+        row["prazo de entrega"]?.trim() || "sem prazo";
 
       designPendentes.push(
         `🟡 ${titulo} • ${status} • ${prazo}`
       );
     }
 
-    // 📭 se não tiver nada
+    // 📭 vazio total
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
     }
 
-    // 📦 monta resposta final
+    // 📦 resposta final
     let texto = "📋 **Pedidos pendentes:**\n\n";
 
-    if (betagemPendentes.length) {
-      texto += "🎬 **BETAGEM**\n";
-      texto += betagemPendentes.join("\n") + "\n\n";
-    } else {
-      texto += "🎬 **BETAGEM**\nNenhum pedido pendente.\n\n";
-    }
+    texto += "🎬 **BETAGEM**\n";
+    texto += betagemPendentes.length
+      ? betagemPendentes.join("\n") + "\n\n"
+      : "Nenhum pedido pendente.\n\n";
 
-    if (designPendentes.length) {
-      texto += "🎨 **DESIGN**\n";
-      texto += designPendentes.join("\n") + "\n";
-    } else {
-      texto += "🎨 **DESIGN**\nNenhum pedido pendente.\n";
-    }
+    texto += "🎨 **DESIGN**\n";
+    texto += designPendentes.length
+      ? designPendentes.join("\n")
+      : "Nenhum pedido pendente.\n";
 
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {

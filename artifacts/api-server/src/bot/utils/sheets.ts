@@ -2,29 +2,36 @@ export async function fetchRows(url: string): Promise<any[]> {
   const res = await fetch(url);
   const text = await res.text();
 
-  const lines = text
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const lines = text.split("\n");
 
   if (lines.length === 0) return [];
 
-  const headers = parseCSVLine(lines[0]);
+  // 🔥 normaliza headers (evita problema de espaços e diferenças de escrita)
+  const headers = parseCSVLine(lines[0]).map((h) =>
+    h.trim().toLowerCase()
+  );
 
-  return lines.slice(1).map((line) => {
+  const rows = lines.slice(1).map((line) => {
     const values = parseCSVLine(line);
 
     const obj: any = {};
 
     headers.forEach((h, i) => {
-      obj[h] = values[i] ?? "";
+      obj[h] = (values[i] ?? "").trim();
     });
 
     return obj;
   });
+
+  // 🔥 remove linhas totalmente vazias (corrige seu bug de “pendentes fantasmas”)
+  return rows.filter((row) =>
+    Object.values(row).some(
+      (v) => v && v.toString().trim() !== ""
+    )
+  );
 }
 
-// CSV parser seguro (suporta vírgula dentro de aspas)
+// CSV parser seguro (mantido, mas levemente ajustado)
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -33,19 +40,22 @@ function parseCSVLine(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
 
+    // aspas duplas escapadas ""
     if (char === '"' && line[i + 1] === '"') {
       current += '"';
       i++;
       continue;
     }
 
+    // toggle de aspas
     if (char === '"') {
       inQuotes = !inQuotes;
       continue;
     }
 
+    // separador de coluna
     if (char === "," && !inQuotes) {
-      result.push(current.trim());
+      result.push(current);
       current = "";
       continue;
     }
@@ -53,7 +63,7 @@ function parseCSVLine(line: string): string[] {
     current += char;
   }
 
-  result.push(current.trim());
+  result.push(current);
 
-  return result;
+  return result.map((v) => v.trim());
 }
