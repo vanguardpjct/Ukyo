@@ -3,7 +3,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
-import { fetchSheetCSV as fetchRows } from "../utils/sheets";
+import { fetchRows } from "../utils/sheets";
 
 const BASE =
   "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
