@@ -7,7 +7,7 @@ import { fetchRows } from "../utils/sheets";
 import { estaAtrasado } from "../utils/atrasados";
 
 const BASE =
-  "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/export?format=csv";
+  "https://docs.google.com/spreadsheets/d/1i2RSu61Q4ph51iMjJ3sd4IPjJsEnmfDrARmNNfCpe38/gviz/tq?tqx=out:csv";
 
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
@@ -41,7 +41,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const atrasadosBetagem: string[] = [];
     const atrasadosDesign: string[] = [];
 
-    // 🔵 BETAGEM
     for (const row of betagem) {
       const status = get(row, ["status"]).toUpperCase();
       if (status === "ENTREGUE") continue;
@@ -54,7 +53,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       }
     }
 
-    // 🎨 DESIGN
     for (const row of design) {
       const status = get(row, ["status"]).toUpperCase();
       if (status === "ENTREGUE") continue;
