@@ -11,108 +11,46 @@ const BASE =
 const BETAGEM_URL = `${BASE}&gid=1086349845`;
 const DESIGN_URL = `${BASE}&gid=8022561`;
 
-// ======================
-// LIMPEZA DE LINHAS
-// ======================
-function limparLinhas(rows: any[]) {
-  return rows.filter((row) => {
-    if (!row) return false;
-
-    return Object.values(row).some(
-      (v) => String(v ?? "").trim() !== ""
-    );
-  });
-}
-
-// ======================
-// GET SEGURO (multi-chave)
-// ======================
-function get(row: any, keys: string[]) {
-  for (const key of keys) {
-    const value = row?.[key];
-    if (value && String(value).trim() !== "") {
-      return String(value).trim();
-    }
-  }
-  return "";
-}
-
 export const data = new SlashCommandBuilder()
   .setName("pendentes")
   .setDescription("Mostra pedidos pendentes");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  console.log("🚨 /pendentes chamado");
-
   await interaction.deferReply();
 
   try {
-    const [betagemRaw, designRaw] = await Promise.all([
+    const [betagem, design] = await Promise.all([
       fetchRows(BETAGEM_URL),
       fetchRows(DESIGN_URL),
     ]);
 
-    const betagem = limparLinhas(betagemRaw);
-    const design = limparLinhas(designRaw);
-
     const betagemPendentes: string[] = [];
     const designPendentes: string[] = [];
 
-    // ======================
-    // BETAGEM
-    // ======================
     for (const row of betagem) {
-      const status = get(row, ["STATUS", "Status"]).toUpperCase();
+      const status = String(row["STATUS"] ?? "").trim().toUpperCase();
+      if (!status || status === "ENTREGUE") continue;
 
-      if (!status) continue;
-      if (status === "ENTREGUE") continue;
-
-      const titulo = get(row, [
-        "Titulo da história",
-        "Título da história",
-        "Titulo",
-        "Título",
-      ]);
-
-      const prazo = get(row, [
-        "Prazo de entrega",
-        "Prazo de entrega:",
-      ]);
+      const titulo = String(row["Titulo da história"] ?? "").trim();
+      const prazo = String(row["Prazo de entrega"] ?? "").trim();
 
       betagemPendentes.push(
         `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
       );
     }
 
-    // ======================
-    // DESIGN
-    // ======================
     for (const row of design) {
-      const status = get(row, ["STATUS", "Status"]).toUpperCase();
+      const status = String(row["STATUS"] ?? "").trim().toUpperCase();
+      if (!status || status === "ENTREGUE") continue;
 
-      if (!status) continue;
-      if (status === "ENTREGUE") continue;
-
-      const titulo = get(row, [
-        "Titulo da história",
-        "Título da história",
-        "Titulo",
-        "Título",
-      ]);
-
-      const prazo = get(row, [
-        "Prazo de entrega",
-        "Prazo de entrega:",
-      ]);
+      const titulo = String(row["Titulo da história"] ?? "").trim();
+      const prazo = String(row["Prazo de entrega"] ?? "").trim();
 
       designPendentes.push(
         `🟡 ${titulo || "Sem título"} • ${status || "SEM STATUS"} • ${prazo || "sem prazo"}`
       );
     }
 
-    // ======================
-    // RESPOSTA FINAL
-    // ======================
     if (!betagemPendentes.length && !designPendentes.length) {
       await interaction.editReply("✅ Nenhum pedido pendente.");
       return;
@@ -121,22 +59,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     let texto = "📋 **Pedidos pendentes:**\n\n";
 
     texto += "🎬 **BETAGEM**\n";
-    texto += betagemPendentes.length
-      ? betagemPendentes.join("\n")
-      : "Nenhum pedido pendente.";
+    texto += betagemPendentes.join("\n") || "Nenhum pedido pendente.";
     texto += "\n\n";
 
     texto += "🎨 **DESIGN**\n";
-    texto += designPendentes.length
-      ? designPendentes.join("\n")
-      : "Nenhum pedido pendente.";
+    texto += designPendentes.join("\n") || "Nenhum pedido pendente.";
 
     await interaction.editReply(texto.slice(0, 2000));
   } catch (err) {
-    console.error("❌ ERRO NO /pendentes:", err);
-
-    await interaction.editReply(
-      "❌ Erro ao buscar dados da planilha."
-    );
+    console.error(err);
+    await interaction.editReply("❌ Erro ao buscar dados da planilha.");
   }
 }
